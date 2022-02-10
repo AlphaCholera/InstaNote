@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:icon="@android:drawable/ic_menu_delete"
+        android:id="@+id/discard"
+        android:title="Discard" />
+
+    <item
+        android:icon="@drawable/ic_menu_share"
+        android:id="@+id/share"
+        android:title="Share"/>
+
+    <item
+        android:icon="@android:drawable/ic_menu_delete"
+        android:id="@+id/delete"
+        android:title="Delete"/>
+
+    <!--<item-->
+        <!--android:icon="@android:drawable/ic_lock_lock"-->
+        <!--android:id="@+id/lock"-->
+        <!--android:title="Lock"/>-->
+
+    <!--<item-->
+        <!--android:icon="@android:drawable/ic_lock_idle_alarm"-->
+        <!--android:id="@+id/reminder"-->
+        <!--android:title="Reminder"/>-->
+</menu>
