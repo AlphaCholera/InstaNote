@@ -6,7 +6,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -33,6 +37,9 @@ public class Main2Activity extends AppCompatActivity {
     private EditText notes;
     private EditText title;
     private ImageButton colorchangebutton, texttospeech;
+    private SpeechRecognizer speech = null;
+    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
+    private Intent recognizerIntent;
     private int selectedColor;
     private Menu menu;
     boolean hasUserChangedTitle = false;
@@ -70,7 +77,8 @@ public class Main2Activity extends AppCompatActivity {
         boolean isNewFile = sp.getBoolean("isNewFile", true);
         if (!isNewFile) {
             int darkColor = new DatabaseManagement(Main2Activity.this).getColor(Name_Of_The_File);
-            setColorsOfTheWidgets(darkColor, new Colors().getColorHashMap().get(darkColor), true);
+            int lightColor = new Colors().getColorHashMap().get(darkColor);
+            setColorsOfTheWidgets(darkColor, lightColor, true);
         } else {
             selectedColor = getResources().getColor(R.color.darkOrangeColor);
             setStatusBarColor(getResources().getColor(R.color.darkOrangeColor));
@@ -127,7 +135,8 @@ public class Main2Activity extends AppCompatActivity {
                 LayoutInflater factory = LayoutInflater.from(Main2Activity.this);
                 View view= factory.inflate(R.layout.color_chooser, null);
                 builder.setView(view);
-
+                builder.create();
+                builder.show();
                 ImageButton blue = view.findViewById(R.id.imageButton);
                 blue.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -171,27 +180,25 @@ public class Main2Activity extends AppCompatActivity {
                     }
                 });
 
-                builder.create();
-                builder.show();
+
             }
         });
 
-        // Should write on the notes edittext by clicking on this button
         texttospeech.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                requestAudioPermissions();
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            public void onClick(View view) {
+                // start speech recogniser
+                resetSpeechRecognizer();
 
-                // the below line could be skipped
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-
-                if (intent.resolveActivity(getPackageManager())!=null) {
-                    startActivityForResult(intent, 10);
-                } else {
-                    Toast.makeText(Main2Activity.this, "This feature is not supported on your android device", Toast.LENGTH_SHORT).show();
+                // check for permission
+                int permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO);
+                if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(Main2Activity.this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_REQUEST_RECORD_AUDIO);
+                    return;
                 }
+
+                setRecogniserIntent();
+                speech.startListening(recognizerIntent);
             }
         });
     }
@@ -312,13 +319,13 @@ public class Main2Activity extends AppCompatActivity {
                 // To remove the contents of the SharedPreferences so that on creation of the another file the same values do not appear
                 sp.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
             } else
-                Toast.makeText(this, "Error in renaming file..!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error in renaming file!", Toast.LENGTH_SHORT).show();
         }
         else {
             if (FileHandling.createFile(getFilesDir(), filename, res, selectedColor, Main2Activity.this)) {
                 Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
             } else
-                Toast.makeText(this, "Error in saving file..!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error in saving file!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -349,16 +356,66 @@ public class Main2Activity extends AppCompatActivity {
         }
     }
 
-    // Text To Speech feature
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onStop() {
+        super.onStop();
+        if (speech != null) {
+            speech.destroy();
+        }
+    }
 
-        switch (requestCode) {
-            case 10:
-                if (resultCode == RESULT_OK && data != null) {
-                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    switch (result.get(0)) {
+    private void resetSpeechRecognizer() {
+        if(speech != null)
+            speech.destroy();
+        speech = SpeechRecognizer.createSpeechRecognizer(this);
+        if(SpeechRecognizer.isRecognitionAvailable(this))
+            speech.setRecognitionListener(new RecognitionListener() {
+                @Override
+                public void onReadyForSpeech(Bundle bundle) {
+
+                }
+
+                @Override
+                public void onBeginningOfSpeech() {
+
+                }
+
+                @Override
+                public void onRmsChanged(float v) {
+
+                }
+
+                @Override
+                public void onBufferReceived(byte[] bytes) {
+
+                }
+
+                @Override
+                public void onEndOfSpeech() {
+                    speech.stopListening();
+                }
+
+                @Override
+                public void onError(int i) {
+                    // rest voice recogniser
+                    resetSpeechRecognizer();
+                    speech.startListening(recognizerIntent);
+                    new CountDownTimer(4000, 1000) {
+
+                        public void onTick(long millisUntilFinished) {
+                            //do nothing, just let it tick
+                        }
+
+                        public void onFinish() {
+                            speech.destroy();
+                        }
+                    }.start();
+                }
+
+                @Override
+                public void onResults(Bundle bundle) {
+                    ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    switch (matches.get(0)) {
                         case "save my note":
                             createFile(title.getText().toString(), notes.getText().toString());
                             finish();
@@ -384,67 +441,49 @@ public class Main2Activity extends AppCompatActivity {
                             notes.setText("");
                             break;
                         default:
-                            notes.setText(String.format("%s%s", notes.getText().toString(), result.get(0)));
+                            notes.setText(String.format("%s %s", notes.getText().toString(), matches.get(0)));
+                            speech.startListening(recognizerIntent);
+                            notes.setSelection(notes.getText().length());
                             break;
                     }
                 }
-                break;
-        }
+
+                @Override
+                public void onPartialResults(Bundle bundle) {
+
+                }
+
+                @Override
+                public void onEvent(int i, Bundle bundle) {
+
+                }
+            });
+        else
+            finish();
     }
 
+    private void setRecogniserIntent() {
 
-
-    //Requesting run-time permissions
-    //Create placeholder for user's consent to record_audio permission.
-    //This will be used in handling callback
-    private final int MY_PERMISSIONS_RECORD_AUDIO = 1;
-
-    private void requestAudioPermissions() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            //When permission is not granted by user, show them message why this permission is needed.
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.RECORD_AUDIO)) {
-                Toast.makeText(this, "Please grant permissions to record audio", Toast.LENGTH_SHORT).show();
-
-                //Give user option to still opt-in the permissions
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        MY_PERMISSIONS_RECORD_AUDIO);
-
-            } else {
-                // Show user dialog to grant permission to record audio
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        MY_PERMISSIONS_RECORD_AUDIO);
-            }
-        }
-        //If permission is granted, then go ahead recording audio
-        else if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            //Go ahead with recording audio now
-        }
+        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
+                "en");
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
     }
 
-    //Handling callback
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_RECORD_AUDIO: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay!
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    Toast.makeText(this, "Permissions Denied to record audio", Toast.LENGTH_SHORT).show();
-                }
-                return;
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                speech.startListening(recognizerIntent);
+            } else {
+                Toast.makeText(Main2Activity.this, "Permission Denied!", Toast
+                        .LENGTH_SHORT).show();
+                finish();
             }
         }
     }
