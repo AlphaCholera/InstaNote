@@ -15,6 +15,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,14 +33,16 @@ import java.util.Locale;
 
 public class Main2Activity extends AppCompatActivity {
 
-    EditText notes;
-    TextView title;
-    ImageButton colorchangebutton, texttospeech;
-    Menu menu;
+    private EditText notes;
+    private EditText title;
+    private ImageButton colorchangebutton, texttospeech;
+    private Menu menu;
+    boolean hasUserChangedTitle = false;
     private static final int TIME_DELAY = 3000;
     private static long back_pressed;
-    LinedEditText linedEditText;
-    Toolbar toolbar;
+    private LinedEditText linedEditText;
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,30 +50,68 @@ public class Main2Activity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // get the references of all the widgets
+        /*
+        * get the references of all the widgets
+        */
         notes = findViewById(R.id.notes);
         title = findViewById(R.id.title);
         colorchangebutton = findViewById(R.id.colorchangebutton);
         texttospeech = findViewById(R.id.texttospeech);
         linedEditText = new LinedEditText(Main2Activity.this);
 
-        // Retrieve the contents of the file made and set them in respective fields
+        /*
+        * Retrieve the contents of the file made and set them in respective fields
+        * */
         SharedPreferences sp = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
         String Name_Of_The_File = sp.getString("FileName", null);
         title.setText(Name_Of_The_File);
         String Contents_Of_The_File = sp.getString("Contents", null);
         notes.setText(Contents_Of_The_File);
-        // To remove the contents of the SharedPreferences so that on creation of the another file the same values do not appear
-        sp.edit().remove("FileName").remove("Contents").apply();
 
+        /*
+        * Add listeners to notes and title
+        * */
+        notes.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-        // Retrieve the contents of the file already existing and set them in respective fields
-        // If no value is found from the MySharedPreferences, then we will find in MySharedPreferences2, i.e. why if statement is there here
-        if (Name_Of_The_File==null) {
-            SharedPreferences sp1 = getSharedPreferences("MySharedPreferences2", MODE_PRIVATE);
-            title.setText(sp1.getString("NaamFileKa", "ERROR"));
-            sp1.edit().remove("NaamFileKa").apply();
-        }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!hasUserChangedTitle) {
+                    title.setTag("arbitrary value");
+                    title.setText(editable.toString());
+                    title.setTag(null);
+                }
+            }
+        });
+
+        title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (title.getTag() == null) {
+                    // value changed by user
+                    hasUserChangedTitle = true;
+                }
+            }
+        });
+
         colorchangebutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -233,37 +275,57 @@ public class Main2Activity extends AppCompatActivity {
     // Else, only have the discard option
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        SharedPreferences sp2 = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
-        SharedPreferences sp3 = getSharedPreferences("MySharedPreferences2", MODE_PRIVATE);
-        if (sp2.getBoolean("isNewFile", false)) {
+        SharedPreferences sp = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
+        if (!sp.getBoolean("isNewFile", true)) {
             menu.findItem(R.id.discard).setVisible(false);
-            sp2.edit().remove("isNewFile").apply();
-        }
-        if (sp3.getBoolean("isNewFile", false)) {
+        } else {
             menu.findItem(R.id.delete).setVisible(false);
-            sp3.edit().remove("isNewFile").apply();
         }
         return super.onPrepareOptionsMenu(menu);
     }
 
+    // If nothing is done by the user, simply go back
+    // If user has left the title empty, make first 15 characters of notes as title
+    // If user has opened an old file, rename it
     @Override
     public void onBackPressed() {
-
-        if (back_pressed + TIME_DELAY > System.currentTimeMillis()) {
+        if (notes.getText().toString().isEmpty() && title.getText().toString().isEmpty()) {
             super.onBackPressed();
-            String res = notes.getText().toString();
-            String filename = title.getText().toString();
-            if (FileHandling.createFile(filename, res, Main2Activity.this)) {
-                Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
-            }
-            else
-                Toast.makeText(this, "Error in saving file..!!", Toast.LENGTH_SHORT).show();
-
         } else {
-            Toast.makeText(getBaseContext(), "Press once again to save your note!",
-                    Toast.LENGTH_SHORT).show();
+            if (back_pressed + TIME_DELAY > System.currentTimeMillis()) {
+                super.onBackPressed();
+                String res = notes.getText().toString();
+                String filename = title.getText().toString();
+                if (filename.isEmpty()) {
+                    if (res.length() >= 15) {
+                        filename = res.substring(0, 15);
+                    } else {
+                        filename = res;
+                    }
+                }
+                SharedPreferences sp1 = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
+                if (!sp1.getBoolean("isNewFile", true)) {
+                    if (FileHandling.renameFile(sp1.getString("FileName", "ERROR"), filename, res, Main2Activity.this)) {
+                        Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
+                        // To remove the contents of the SharedPreferences so that on creation of the another file the same values do not appear
+                        sp1.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
+                    } else
+                        Toast.makeText(this, "Error in renaming file..!!", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    if (FileHandling.createFile(filename, res, Main2Activity.this)) {
+                        Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(this, "Error in saving file..!!", Toast.LENGTH_SHORT).show();
+                }
+
+
+            } else {
+                Toast.makeText(getBaseContext(), "Press back once again to save your note!",
+                        Toast.LENGTH_SHORT).show();
+            }
+            back_pressed = System.currentTimeMillis();
         }
-        back_pressed = System.currentTimeMillis();
     }
 
     // Text To Speech feature

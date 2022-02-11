@@ -36,12 +36,10 @@
             android:id="@+id/textViewOptions"
             android:layout_width="match_parent"
             android:layout_height="42dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
             android:background="#ffd658"
             android:gravity="end|bottom"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:text="&#8942;"
+            android:text="&#8942; "
             android:textAppearance="?android:textAppearanceLarge" />
 
     </LinearLayout>

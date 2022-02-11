@@ -59,74 +59,14 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //  final EditText editText = textEntryView.findViewById(R.id.renamefile);
+                SharedPreferences sp = getSharedPreferences("MySharedPreferences2",MODE_PRIVATE);
+                SharedPreferences.Editor ed = sp.edit();
+                ed.putBoolean("isNewFile", true);
+                ed.apply();
 
-                // Creating an edittext for the dialog box
-                final EditText editText = new EditText(MainActivity.this);
-                editText.setHint("Give your note a name");
-
-                // Save the below three lines in NIIT24 app
-//                LinearLayout linearLayout = new LinearLayout(MainActivity.this);
-//                linearLayout.setOrientation(LinearLayout.VERTICAL);
-//                linearLayout.addView(editText);
-
-                // Creating the AlertDialog Box for the user to enter the name of the note
-                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Give your note a name..");
-
-                // Save the below three lines in NIIT24 app
-//                LayoutInflater factory = LayoutInflater.from(MainActivity.this);
-//                final View textEntryView = factory.inflate(R.layout.rename_file_layout, null);
-//                builder.setView(textEntryView);
-                builder.setIcon(R.drawable.appicon);
-                builder.setView(editText);
-                builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(final DialogInterface dialog, int which) {
-
-                        //  final EditText editText = textEntryView.findViewById(R.id.renamefile);
-                        SharedPreferences sp = getSharedPreferences("MySharedPreferences2",MODE_PRIVATE);
-                        SharedPreferences.Editor ed = sp.edit();
-                        ed.putString("NaamFileKa",editText.getText().toString());
-                        // lola
-                        ed.putBoolean("isNewFile", true);
-                        ed.apply();
-                        Intent intent = new Intent(MainActivity.this , Main2Activity.class);
-                        startActivity(intent);
-
-
-                        ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
-                        editText.addTextChangedListener(new TextWatcher() {
-                            @Override
-                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                            }
-
-                            @Override
-                            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                            }
-
-                            @Override
-                            public void afterTextChanged(Editable s) {
-                                if (s.toString().isEmpty())
-                                    ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
-                                else
-                                    ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.VISIBLE);
-                            }
-                        });
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
-                builder.create();
-
-
-
-                builder.show();
+                Intent intent = new Intent(MainActivity.this , Main2Activity.class);
+                startActivity(intent);
             }
         });
 

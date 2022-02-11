@@ -40,8 +40,7 @@ public class FileHandling {
         }
     }
 
-    static public boolean renameFile(String oldname, String newname, Context context) {
-        String res = contentsOfFile(oldname, context);
+    static public boolean renameFile(String oldname, String newname, String res, Context context) {
         return deleteFile(oldname, context) && createFile(newname, res, context);
     }
 

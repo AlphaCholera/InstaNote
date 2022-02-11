@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".Main2Activity">
 
     <android.support.design.widget.AppBarLayout
@@ -20,53 +21,42 @@
             android:minHeight="?attr/actionBarSize"
             android:theme="?attr/actionBarTheme">
 
-            <android.support.constraint.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <TextView
+                <EditText
                     android:id="@+id/title"
-                    android:layout_width="155dp"
+                    android:layout_width="180dp"
                     android:layout_height="45dp"
-                    android:layout_marginEnd="36dp"
                     android:background="@android:color/background_light"
                     android:gravity="center"
+                    android:maxLength="15"
+                    android:inputType="text"
+                    android:maxLines="1"
                     android:textAlignment="center"
                     android:textColor="@android:color/black"
-                    android:textSize="20sp"
-                    app:layout_anchorGravity="top|center"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/colorchangebutton"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_marginEnd="15dp"
+                    android:textSize="20sp" />
 
                 <ImageButton
                     android:id="@+id/colorchangebutton"
-                    android:layout_width="45dp"
+                    android:layout_width="0dp"
                     android:layout_height="45dp"
-                    android:layout_marginEnd="33dp"
+                    android:layout_marginEnd="15dp"
                     android:layout_weight="1"
-                    android:padding="50dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/texttospeech"
-                    app:layout_constraintStart_toEndOf="@+id/title"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:padding="5dp"
                     app:srcCompat="@drawable/colorbutton" />
 
                 <ImageButton
                     android:id="@+id/texttospeech"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
-                    android:layout_marginEnd="66dp"
+                    android:layout_marginEnd="15dp"
                     android:background="@android:color/background_light"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_btn_speak_now"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/colorchangebutton"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0" />
-            </android.support.constraint.ConstraintLayout>
+                    android:src="@android:drawable/ic_btn_speak_now" />
+            </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
 
@@ -74,4 +64,4 @@
 
     <include layout="@layout/content_main2" />
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

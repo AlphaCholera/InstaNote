@@ -5,10 +5,6 @@
         android:title="Open"/>
 
     <item
-        android:id="@+id/rename"
-        android:title="Rename"/>
-
-    <item
         android:id="@+id/share"
         android:title="Share"/>
 
