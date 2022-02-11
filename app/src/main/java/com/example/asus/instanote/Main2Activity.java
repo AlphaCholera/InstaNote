@@ -7,9 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -17,15 +14,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -36,6 +33,7 @@ public class Main2Activity extends AppCompatActivity {
     private EditText notes;
     private EditText title;
     private ImageButton colorchangebutton, texttospeech;
+    private int selectedColor;
     private Menu menu;
     boolean hasUserChangedTitle = false;
     private static final int TIME_DELAY = 3000;
@@ -47,8 +45,10 @@ public class Main2Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        toolbar = findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setStatusBarColor(R.color.darkOrangeColor);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         /*
         * get the references of all the widgets
@@ -67,6 +67,14 @@ public class Main2Activity extends AppCompatActivity {
         title.setText(Name_Of_The_File);
         String Contents_Of_The_File = sp.getString("Contents", null);
         notes.setText(Contents_Of_The_File);
+        boolean isNewFile = sp.getBoolean("isNewFile", true);
+        if (!isNewFile) {
+            int darkColor = new DatabaseManagement(Main2Activity.this).getColor(Name_Of_The_File);
+            setColorsOfTheWidgets(darkColor, new Colors().getColorHashMap().get(darkColor), true);
+        } else {
+            selectedColor = getResources().getColor(R.color.darkOrangeColor);
+            setStatusBarColor(getResources().getColor(R.color.darkOrangeColor));
+        }
 
         /*
         * Add listeners to notes and title
@@ -124,54 +132,42 @@ public class Main2Activity extends AppCompatActivity {
                 blue.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.darkBlueColor));
-                        notes.setBackgroundColor(getResources().getColor(R.color.lightBlueColor));
-                        linedEditText.setColorOfLinedEditText(R.color.darkBlueColor);
+                        setColorsOfTheWidgets(R.color.darkBlueColor, R.color.lightBlueColor, false);
                     }
                 });
                 ImageButton black = view.findViewById(R.id.imageButton4);
                 black.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.darkBlackColor));
-                        notes.setBackgroundColor(getResources().getColor(R.color.lightBlackColor));
-                        linedEditText.setColorOfLinedEditText(R.color.darkBlackColor);
+                        setColorsOfTheWidgets(R.color.darkBlackColor, R.color.lightBlackColor, false);
                     }
                 });
                 ImageButton orange = view.findViewById(R.id.imageButton3);
                 orange.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.darkOrangeColor));
-                        notes.setBackgroundColor(getResources().getColor(R.color.lightOrangeColor));
-                        linedEditText.setColorOfLinedEditText(R.color.darkOrangeColor);
+                        setColorsOfTheWidgets(R.color.darkOrangeColor, R.color.lightOrangeColor, false);
                     }
                 });
                 ImageButton green = view.findViewById(R.id.imageButton2);
                 green.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                        notes.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                        linedEditText.setColorOfLinedEditText(R.color.colorPrimaryDark);
+                        setColorsOfTheWidgets(R.color.darkGreenColor, R.color.lightGreenColor, false);
                     }
                 });
                 ImageButton red = view.findViewById(R.id.imageButton5);
                 red.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.darkRedColor));
-                        notes.setBackgroundColor(getResources().getColor(R.color.lightRedColor));
-                        linedEditText.setColorOfLinedEditText(R.color.darkRedColor);
+                        setColorsOfTheWidgets(R.color.darkRedColor, R.color.lightRedColor, false);
                     }
                 });
                 ImageButton purple = view.findViewById(R.id.imageButton6);
                 purple.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        toolbar.setBackgroundColor(getResources().getColor(R.color.darkPurpleColor));
-                        notes.setBackgroundColor(getResources().getColor(R.color.lightPurpleColor));
-                        linedEditText.setColorOfLinedEditText(R.color.darkPurpleColor);
+                        setColorsOfTheWidgets(R.color.darkPurpleColor, R.color.lightPurpleColor, false);
                     }
                 });
 
@@ -198,6 +194,28 @@ public class Main2Activity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void setStatusBarColor(int color) {
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(color);
+    }
+
+    void setColorsOfTheWidgets(int darkColorId, int lightColorId, boolean isColor) {
+        int darkColor = darkColorId;
+        int lightColor = lightColorId;
+        if (!isColor) {
+            darkColor = getResources().getColor(darkColorId);
+            lightColor = getResources().getColor(lightColorId);
+        }
+        toolbar.setBackgroundColor(darkColor);
+        notes.setBackgroundColor(lightColor);
+        linedEditText.setColorOfLinedEditText(darkColor);
+        setStatusBarColor(darkColor);
+        selectedColor = darkColor;
+        texttospeech.setBackgroundColor(darkColor);
+        colorchangebutton.setBackgroundColor(darkColor);
     }
 
     @Override
@@ -244,17 +262,19 @@ public class Main2Activity extends AppCompatActivity {
                 break;
             case R.id.delete :
                 new AlertDialog.Builder(Main2Activity.this).setTitle("Are you sure you want to delete this note?")
-                        .setPositiveButton("Yeah, pretty sure..!!", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if (FileHandling.deleteFile(title.getText().toString(),Main2Activity.this)) {
-                                    Toast.makeText(Main2Activity.this, "Deleted Successfully..!!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Main2Activity.this, "Deleted Successfully!", Toast.LENGTH_SHORT).show();
+                                    SharedPreferences sp = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
+                                    sp.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
                                     finish();
                                 }
                                 else
-                                    Toast.makeText(Main2Activity.this, "Error in deletion..!!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(Main2Activity.this, "Error in deletion!", Toast.LENGTH_SHORT).show();
                             }
-                        }).setNegativeButton("Nope..!!", new DialogInterface.OnClickListener() {
+                        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
@@ -284,6 +304,24 @@ public class Main2Activity extends AppCompatActivity {
         return super.onPrepareOptionsMenu(menu);
     }
 
+    void createFile(String filename, String res) {
+        SharedPreferences sp = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
+        if (!sp.getBoolean("isNewFile", true)) {
+            if (FileHandling.renameFile(getFilesDir(), sp.getString("FileName", "ERROR"), filename, res, selectedColor, Main2Activity.this)) {
+                Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
+                // To remove the contents of the SharedPreferences so that on creation of the another file the same values do not appear
+                sp.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
+            } else
+                Toast.makeText(this, "Error in renaming file..!!", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            if (FileHandling.createFile(getFilesDir(), filename, res, selectedColor, Main2Activity.this)) {
+                Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(this, "Error in saving file..!!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     // If nothing is done by the user, simply go back
     // If user has left the title empty, make first 15 characters of notes as title
     // If user has opened an old file, rename it
@@ -303,26 +341,9 @@ public class Main2Activity extends AppCompatActivity {
                         filename = res;
                     }
                 }
-                SharedPreferences sp1 = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
-                if (!sp1.getBoolean("isNewFile", true)) {
-                    if (FileHandling.renameFile(sp1.getString("FileName", "ERROR"), filename, res, Main2Activity.this)) {
-                        Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
-                        // To remove the contents of the SharedPreferences so that on creation of the another file the same values do not appear
-                        sp1.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
-                    } else
-                        Toast.makeText(this, "Error in renaming file..!!", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    if (FileHandling.createFile(filename, res, Main2Activity.this)) {
-                        Toast.makeText(this, "Saved Successfully", Toast.LENGTH_SHORT).show();
-                    } else
-                        Toast.makeText(this, "Error in saving file..!!", Toast.LENGTH_SHORT).show();
-                }
-
-
+                createFile(filename, res);
             } else {
-                Toast.makeText(getBaseContext(), "Press back once again to save your note!",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "Press back once again to save your note!", Toast.LENGTH_SHORT).show();
             }
             back_pressed = System.currentTimeMillis();
         }
@@ -339,8 +360,7 @@ public class Main2Activity extends AppCompatActivity {
                     ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     switch (result.get(0)) {
                         case "save my note":
-                            FileHandling.createFile(title.getText().toString(), notes.getText().toString(), Main2Activity.this);
-                            Toast.makeText(Main2Activity.this, "Saved Successfully", Toast.LENGTH_SHORT).show();
+                            createFile(title.getText().toString(), notes.getText().toString());
                             finish();
                             break;
                         case "share my note":
@@ -348,7 +368,9 @@ public class Main2Activity extends AppCompatActivity {
                             break;
                         case "delete my note":
                             FileHandling.deleteFile(title.getText().toString(), Main2Activity.this);
-                            Toast.makeText(Main2Activity.this, "Deleted Successfully..!!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Main2Activity.this, "Deleted Successfully!", Toast.LENGTH_SHORT).show();
+                            SharedPreferences sp = getSharedPreferences("MySharedPreferences", MODE_PRIVATE);
+                            sp.edit().remove("FileName").remove("Contents").remove("isNewFile").apply();
                             finish();
                             break;
                         case "discard my note":

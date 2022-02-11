@@ -13,7 +13,7 @@
         android:id="@+id/notes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#ffd658"
+        android:background="@color/lightOrangeColor"
         android:gravity="top|start"
         android:hint="Start typing here..."
         android:inputType="textMultiLine"

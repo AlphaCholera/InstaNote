@@ -19,14 +19,17 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.MyViewHolder> {
 
     private Context context;
     private ArrayList<String> Data;
+    private Map<Integer, Integer> colorHashMap;
 
-    FileAdapter(ArrayList<String> FILES, Context context) {
+    FileAdapter(ArrayList<String> FILES, Map<Integer, Integer> colorHashMap, Context context) {
         this.Data = FILES;
+        this.colorHashMap = colorHashMap;
         this.context = context;
     }
 
@@ -62,6 +65,12 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.MyViewHolder> 
         holder.fileview.setText(name_of_the_file);
         // Set the contents of the file in the holder
         holder.contents.setText(FileHandling.contentsOfFile(name_of_the_file, context));
+        // Set the color of the holder according to value in database
+        int darkColor = new DatabaseManagement(context).getColor(name_of_the_file);
+        holder.fileview.setBackgroundColor(darkColor);
+        int lightColor = colorHashMap.get(darkColor);
+        holder.textViewOptions.setBackgroundColor(lightColor);
+        holder.contents.setBackgroundColor(lightColor);
 //        holder.itemView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {

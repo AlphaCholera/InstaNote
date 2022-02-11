@@ -1,15 +1,11 @@
 package com.example.asus.instanote;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,12 +15,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
+
 import java.io.File;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -98,9 +94,27 @@ public class MainActivity extends AppCompatActivity
         ArrayList<String> FILES = new ArrayList<>();
         // Copy the elements of the array into an ArrayList to make it compatible with the adapter
         Collections.addAll(FILES, Files);
-        mfileAdapter = new FileAdapter(FILES,MainActivity.this);
+        mfileAdapter = new FileAdapter(FILES,createHashMapOfColors(), MainActivity.this);
         mrecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         mrecyclerView.setAdapter(mfileAdapter);
+    }
+
+    Map<Integer, Integer> createHashMapOfColors() {
+        Map<Integer, Integer> colorHashMap = new HashMap<>();
+        colorHashMap.put(getResources().getColor(R.color.darkGreenColor), getResources().getColor(R.color.lightGreenColor));
+        colorHashMap.put(getResources().getColor(R.color.darkBlackColor), getResources().getColor(R.color.lightBlackColor));
+        colorHashMap.put(getResources().getColor(R.color.darkBlueColor), getResources().getColor(R.color.lightBlueColor));
+        colorHashMap.put(getResources().getColor(R.color.darkRedColor), getResources().getColor(R.color.lightRedColor));
+        colorHashMap.put(getResources().getColor(R.color.darkOrangeColor), getResources().getColor(R.color.lightOrangeColor));
+        colorHashMap.put(getResources().getColor(R.color.darkPurpleColor), getResources().getColor(R.color.lightPurpleColor));
+        colorHashMap.put(R.color.darkGreenColor, R.color.lightGreenColor);
+        colorHashMap.put(R.color.darkBlackColor, R.color.lightBlackColor);
+        colorHashMap.put(R.color.darkBlueColor, R.color.lightBlueColor);
+        colorHashMap.put(R.color.darkRedColor, R.color.lightRedColor);
+        colorHashMap.put(R.color.darkOrangeColor, R.color.lightOrangeColor);
+        colorHashMap.put(R.color.darkPurpleColor, R.color.lightPurpleColor);
+        new Colors(colorHashMap);
+        return colorHashMap;
     }
 
     @Override

@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="lightGreenColor">#90ee90</color>
+    <color name="darkGreenColor">#4ae34a</color>
+
     <color name="colorPrimary">#00b200</color>
     <color name="colorPrimaryDark">#009900</color>
 
     <color name="colorAccent">#FF4081</color>
 
-    <color name="darkOrangeColor">#e8b000</color>
-    <color name="lightOrangeColor">#ffd658</color>
+    <color name="colorOfLines">#e8b000</color>
+    <color name="darkOrangeColor">#ffe400</color>
+    <color name="lightOrangeColor">#ffffe0</color>
 
-    <color name="darkBlackColor">@android:color/black</color>
-    <color name="lightBlackColor">@android:color/darker_gray</color>
+    <color name="darkBlackColor">#999999</color>
+    <color name="lightBlackColor">#D3D3D3</color>
 
-    <color name="darkRedColor">@android:color/holo_red_dark</color>
-    <color name="lightRedColor">@android:color/holo_red_light</color>
+    <color name="darkRedColor">#ff7161</color>
+    <color name="lightRedColor">#ff988f</color>
 
-    <color name="darkBlueColor">@android:color/holo_blue_dark</color>
-    <color name="lightBlueColor">@android:color/holo_blue_light</color>
+    <color name="darkBlueColor">#82c3d9</color>
+    <color name="lightBlueColor">#add8e6</color>
 
-    <color name="lightPurpleColor">@android:color/holo_purple</color>
-    <color name="darkPurpleColor">#400080</color>
+    <color name="lightPurpleColor">#ffe0fa</color>
+    <color name="darkPurpleColor">#feb3ff</color>
 </resources>

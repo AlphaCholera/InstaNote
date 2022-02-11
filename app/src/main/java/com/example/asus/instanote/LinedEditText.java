@@ -10,7 +10,7 @@ import android.util.Log;
 
 public class LinedEditText extends android.support.v7.widget.AppCompatEditText {
     private Paint paint = new Paint();
-    int colorOfLines = R.color.darkOrangeColor;
+    private int colorOfLines = R.color.colorOfLines;
     private static final String TAG = "LinedEditText";
     public LinedEditText(Context context) {
         super(context);
